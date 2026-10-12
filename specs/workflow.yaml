@@ -1,0 +1,306 @@
+schema_version: 1
+workflow_id: landing-page
+description: Fluxo sequencial para descobrir requisitos e entregar uma landing page.
+state: INITIALIZED
+current_stage_id: requirements-discovery
+initialization:
+  bootstrap_path: specs/INIT.md
+  stage_1_status: NOT_STARTED
+  subsequent_stage_status: PENDING
+  product_specifications_approved: none
+  approval_gates: NOT_GRANTED
+
+stage_status_values:
+  - NOT_STARTED
+  - IN_PROGRESS
+  - WAITING_FOR_USER
+  - COMPLETED
+  - PENDING
+  - BLOCKED
+
+stage_status_transitions:
+  current_stage_changes_only_after_recorded_transition: true
+  allowed:
+    - from: NOT_STARTED
+      to: IN_PROGRESS
+      when: User requests the current stage to begin.
+    - from: PENDING
+      to: IN_PROGRESS
+      when: Preceding stage is completed, dependencies are met, and the user explicitly authorizes this stage.
+    - from: IN_PROGRESS
+      to: WAITING_FOR_USER
+      when: Current-stage deliverable is presented for review or direction.
+    - from: WAITING_FOR_USER
+      to: IN_PROGRESS
+      when: User requests changes within the current stage.
+    - from: WAITING_FOR_USER
+      to: COMPLETED
+      when: Stage deliverable is accepted and the required gate evidence is recorded.
+
+specification_lifecycle:
+  allowed_states:
+    - DRAFT
+    - IN_REVIEW
+    - APPROVED
+  approval_transition:
+    from: IN_REVIEW
+    to: APPROVED
+    evidence_required:
+      - explicit_user_decision_for_exact_spec_id_and_version
+      - timestamp_with_timezone
+      - approval_evidence_reference
+      - matching_DEC_record
+    status_alone_is_sufficient: false
+
+approval_policy:
+  approver: human_user
+  stage_transition_requires_explicit_human_authorization: true
+  silence_or_ambiguous_response_grants_approval: false
+  agent_can_approve_for_user: false
+  every_gate_starts_as: NOT_GRANTED
+  required_evidence:
+    - completed_stage_deliverables
+    - explicit_user_decision_for_the_transition
+    - matching_reference_in_docs/decision-log.md
+  do_not_update_gate_without_verifiable_evidence: true
+
+traceability_policy:
+  originating_spec_reference_required_for_every_derived_artifact: true
+  reference_format: SPEC-NNN@MAJOR.MINOR.PATCH
+  first_product_spec_is_its_own_origin: true
+  additional_spec_requires_independent_approved_product_functionality: true
+  do_not_create_a_spec_per_workflow_stage: true
+
+clarification_rules:
+  ask_only_for_required_unconfirmed_information: true
+  never_infer_user_decisions: true
+  preserve_unanswered_items_as_open_questions: true
+  minimum_confirmed_fields:
+    - objective
+    - scope
+    - functional_requirement
+  question_prompts:
+    objective: "Qual resultado ou problema esta funcionalidade deve atender?"
+    scope: "O que deve estar incluído no escopo?"
+    functional_requirement: "Qual comportamento observável você espera?"
+    audience: "Quem usará ou será afetado por esta funcionalidade?"
+    constraints: "Há alguma restrição confirmada que devemos registrar?"
+    acceptance_criteria: "Como você reconhecerá que esta funcionalidade está pronta?"
+  spec_template: specs/templates/SPEC-TEMPLATE.md
+  spec_output_directory: specs/generated/
+
+stages:
+  - id: requirements-discovery
+    order: 1
+    name: Levantamento de requisitos
+    status: NOT_STARTED
+    agents:
+      - product_owner
+      - analista_requisitos
+    skill: .agents/skills/requirements-discovery/SKILL.md
+    inputs:
+      - AGENTS.md
+      - plans/FLUXO-LANDING-PAGE.md
+      - docs/
+      - specs/INIT.md
+      - specs/workflow.yaml
+    deliverables:
+      - id: product-specification
+        description: Briefing, escopo, requisitos confirmados, prioridades, restrições, critérios de aceitação e perguntas abertas.
+        location: specs/generated/
+        originating_spec: self
+    depends_on: []
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - exact_specification_version_presented
+        - explicit_user_approval_of_that_version
+        - explicit_user_authorization_to_start_planning
+        - matching_decision_log_entry
+
+  - id: planning
+    order: 2
+    name: Planejamento
+    status: PENDING
+    agents:
+      - tech_lead
+    additional_agents: Equipe necessária conforme escopo aprovado e orientação do usuário.
+    skill: .agents/skills/plan-landing-page/SKILL.md
+    inputs:
+      - approved_originating_specification
+    deliverables:
+      - id: implementation-plan
+        description: Tarefas, prioridades, decisões técnicas, dependências e sequência.
+        location: plans/
+        originating_spec_reference_required: true
+      - id: work-items
+        description: Tarefas rastreáveis derivadas do plano.
+        location: tasks/
+        originating_spec_reference_required: true
+      - id: contract-assessment
+        description: Avaliação do Tech Lead por especificação/tarefa, com justificativa para contratos necessários ou dispensados.
+        location: plans/contract-assessment.yaml
+        originating_spec_reference_required: true
+    depends_on:
+      - requirements-discovery
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - plan_and_tasks_presented
+        - contract_assessment_presented
+        - explicit_user_authorization_to_start_design
+        - matching_decision_log_entry
+
+  - id: ux-ui-design
+    order: 3
+    name: UX / UI Design
+    status: PENDING
+    agents:
+      - ux_designer
+      - ui_designer
+    skill: .agents/skills/design-landing-page/SKILL.md
+    inputs:
+      - approved_originating_specification
+      - approved_implementation_plan
+    deliverables:
+      - id: ux-ui-design
+        description: Organização, navegação, wireframe, layout e identidade visual.
+        location: Destino de design definido no planejamento, como Figma quando aplicável.
+        originating_spec_reference_required: true
+    depends_on:
+      - planning
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - design_artifacts_presented
+        - explicit_user_authorization_to_start_development
+        - matching_decision_log_entry
+
+  - id: development
+    order: 4
+    name: Desenvolvimento
+    status: PENDING
+    agents:
+      - desenvolvedor_frontend
+    skill: .agents/skills/implement-feature/SKILL.md
+    inputs:
+      - approved_originating_specification
+      - approved_implementation_plan
+      - approved_ux_ui_design
+    deliverables:
+      - id: implementation
+        description: Código de produto implementado conforme o escopo aprovado.
+        location: src/ e arquivos relacionados.
+        originating_spec_reference_required: true
+      - id: local-verification-summary
+        description: Resumo das verificações locais realmente executadas.
+        location: Registro relacionado à tarefa em tasks/ ou docs/.
+        originating_spec_reference_required: true
+    depends_on:
+      - ux-ui-design
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - implementation_and_verification_summary_presented
+        - explicit_user_authorization_to_start_qa
+        - matching_decision_log_entry
+
+  - id: qa
+    order: 5
+    name: Testes e QA
+    status: PENDING
+    agents:
+      - qa_tester
+    skill: .agents/skills/test-landing-page/SKILL.md
+    inputs:
+      - approved_originating_specification
+      - implementation
+      - acceptance_criteria
+    deliverables:
+      - id: qa-report
+        description: Resultado por critério, bugs, evidências e itens não verificados.
+        location: tests/
+        originating_spec_reference_required: true
+    depends_on:
+      - development
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - qa_report_presented
+        - explicit_user_authorization_to_start_technical_review
+        - matching_decision_log_entry
+
+  - id: technical-review-approval
+    order: 6
+    name: Revisão e aprovação
+    status: PENDING
+    agents:
+      - tech_lead
+      - product_owner
+    skill: .agents/skills/code-review/SKILL.md
+    inputs:
+      - approved_originating_specification
+      - implementation
+      - qa_report
+    deliverables:
+      - id: technical-review-and-product-decision
+        description: Parecer técnico e decisão do PO de aceitar ou solicitar ajustes.
+        location: docs/ e referências dos artefatos revisados.
+        originating_spec_reference_required: true
+    depends_on:
+      - qa
+    approval_gate:
+      applies_before: next_stage
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - technical_review_record
+        - explicit_product_owner_acceptance
+        - explicit_user_authorization_for_deployment
+        - matching_decision_log_entry
+
+  - id: deployment
+    order: 7
+    name: Deploy
+    status: PENDING
+    agents:
+      - devops
+      - desenvolvedor_frontend
+    skill: .agents/skills/deploy-approved/SKILL.md
+    inputs:
+      - approved_originating_specification
+      - product_owner_acceptance_from_stage_6
+      - explicit_user_deployment_authorization
+    deliverables:
+      - id: deployment-record
+        description: Endereço, versão publicada e resultado da verificação pós-deploy.
+        location: docs/ e referência ao ambiente publicado.
+        originating_spec_reference_required: true
+    depends_on:
+      - technical-review-approval
+    approval_gate:
+      applies_before: execution
+      status: NOT_GRANTED
+      evidence_ref: null
+      requires:
+        - approved_stage_6_product_decision
+        - explicit_user_authorization_for_production_deployment
+        - deployment_scope_and_version_recorded
+        - matching_decision_log_entry
+
+transition_procedure:
+  - Present the completed deliverable for the current stage.
+  - Wait for explicit user direction; do not start another stage automatically.
+  - Verify the exact artifact, decision evidence, and DEC reference before changing a gate.
+  - Update docs/project-context.md, docs/project-roadmap.md, and docs/decision-log.md with project changes.
+  - Create additional product specifications only for independently scoped product functionality.

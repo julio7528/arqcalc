@@ -1,0 +1,84 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://calculadora.local/orchestrator/workflow.schema.json",
+  "title": "Project workflow",
+  "type": "object",
+  "required": ["schema_version", "workflow_id", "state", "current_stage_id", "initialization", "stages", "clarification_rules"],
+  "properties": {
+    "schema_version": {"const": 1},
+    "workflow_id": {"type": "string", "minLength": 1},
+    "state": {"type": "string", "minLength": 1},
+    "current_stage_id": {"type": "string", "minLength": 1},
+    "initialization": {
+      "type": "object",
+      "required": ["bootstrap_path", "stage_1_status", "subsequent_stage_status", "product_specifications_approved", "approval_gates"],
+      "properties": {
+        "bootstrap_path": {"type": "string", "minLength": 1},
+        "stage_1_status": {"const": "NOT_STARTED"},
+        "subsequent_stage_status": {"const": "PENDING"},
+        "product_specifications_approved": {"const": "none"},
+        "approval_gates": {"const": "NOT_GRANTED"}
+      },
+      "additionalProperties": true
+    },
+    "clarification_rules": {
+      "type": "object",
+      "required": ["ask_only_for_required_unconfirmed_information", "never_infer_user_decisions", "preserve_unanswered_items_as_open_questions", "minimum_confirmed_fields", "question_prompts", "spec_template", "spec_output_directory"],
+      "properties": {
+        "ask_only_for_required_unconfirmed_information": {"const": true},
+        "never_infer_user_decisions": {"const": true},
+        "preserve_unanswered_items_as_open_questions": {"const": true},
+        "minimum_confirmed_fields": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+        "question_prompts": {"type": "object", "additionalProperties": {"type": "string"}},
+        "spec_template": {"type": "string"},
+        "spec_output_directory": {"type": "string"}
+      },
+      "additionalProperties": true
+    },
+    "stages": {
+      "type": "array",
+      "minItems": 1,
+      "items": {
+        "type": "object",
+        "required": ["id", "order", "name", "status", "agents", "skill", "inputs", "deliverables", "depends_on", "approval_gate"],
+        "properties": {
+          "id": {"type": "string", "minLength": 1},
+          "order": {"type": "integer", "minimum": 1},
+          "name": {"type": "string", "minLength": 1},
+          "status": {"enum": ["NOT_STARTED", "IN_PROGRESS", "WAITING_FOR_USER", "COMPLETED", "PENDING", "BLOCKED"]},
+          "agents": {"type": "array", "items": {"type": "string"}, "minItems": 1},
+          "skill": {"type": "string", "minLength": 1},
+          "inputs": {"type": "array"},
+          "deliverables": {
+            "type": "array",
+            "minItems": 1,
+            "items": {
+              "type": "object",
+              "required": ["id", "description", "location"],
+              "properties": {
+                "id": {"type": "string", "minLength": 1},
+                "description": {"type": "string"},
+                "location": {"type": "string"}
+              },
+              "additionalProperties": true
+            }
+          },
+          "depends_on": {"type": "array", "items": {"type": "string"}},
+          "approval_gate": {
+            "type": "object",
+            "required": ["applies_before", "status", "evidence_ref", "requires"],
+            "properties": {
+              "applies_before": {"type": "string"},
+              "status": {"enum": ["NOT_GRANTED", "GRANTED"]},
+              "evidence_ref": {"type": ["string", "null"]},
+              "requires": {"type": "array", "items": {"type": "string"}}
+            },
+            "additionalProperties": true
+          }
+        },
+        "additionalProperties": true
+      }
+    }
+  },
+  "additionalProperties": true
+}
