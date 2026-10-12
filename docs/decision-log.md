@@ -59,3 +59,10 @@ Registre eventos de trabalho e decisões relevantes em ordem sequencial usando i
 - **Evento/decisão:** Implementada uma camada de contratos operacionais e de produto com schemas, avaliação de Planning, geração por tarefa, revisão/aprovação humana vinculada a ID/versão/hash e validação integrada ao runtime.
 - **Contexto:** A solicitação anexada definiu contratos reutilizáveis e verificáveis para entradas/saídas, escopo, dependências, resultados e handoffs, mantendo especificações, gates, autorizações e execução controlada existentes como fontes distintas.
 - **Efeito:** Adicionados `contracts/` e `orchestrator/contracts/`; integrados `WorkflowEngine`, `StageController`, `DependencyValidator`, `QualityGate`, `ApprovalManager`, `StateManager`, `CodexExecutor` e a CLI. Planning exige a avaliação do Tech Lead mesmo quando não há contrato de produto. Revisões confirmadas em UX/UI podem criar versão nova e invalidam o gate de Planning até nova aprovação. As migrações SQLite são aditivas e preservam os registros existentes. `python -m compileall -q orchestrator tests` passou e `python -m unittest discover -s tests -v` passou com 43 testes. O estado do workflow, especificações e aprovações do projeto não foram resetados; nenhum processo Codex real nem deploy foi executado. Execução paralela, isolamento real de escopo e testes funcionais continuam fora do subsistema.
+
+### DEC-009 — Guias de início do fluxo e da aplicação
+
+- **Registrado em:** 2026-10-11
+- **Evento/decisão:** Documentados os pontos de entrada para iniciar o fluxo de trabalho e para encontrar as futuras instruções de execução da aplicação.
+- **Contexto:** O usuário pediu orientações claras para iniciar o trabalho do projeto e, separadamente, para iniciar a aplicação que será desenvolvida em `src/`.
+- **Efeito:** `README.md` na raiz explica o fluxo no Codex e o uso básico do orquestrador; `src/README.md` reserva o guia de execução da aplicação. Comandos da aplicação permanecem pendentes da escolha e implementação da tecnologia no Planejamento. `AGENTS.md` orienta manter ambos atualizados.

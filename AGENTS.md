@@ -11,6 +11,7 @@
 - Validação de JSON/YAML confirma apenas estrutura e regras declaradas; não declare requisitos funcionais atendidos sem evidência funcional ou QA separado.
 - Corrija e reteste problemas encontrados pelo QA ou Tech Lead antes de solicitar aprovação final.
 - Não publique em produção antes da aprovação explícita do Product Owner. Após a publicação, verifique e relate o resultado.
+- Mantenha `README.md` na raiz como guia de entrada do repositório e `src/README.md` como guia de execução da aplicação. Documente comandos de instalação e execução somente depois que a tecnologia e os scripts correspondentes estiverem definidos e verificados.
 
 ## Operação do orquestrador
 

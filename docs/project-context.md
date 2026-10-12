@@ -64,6 +64,16 @@ Este documento guarda memorandos de contexto, um por feature ou iniciativa relev
 - **Estado e limites:** A implementação não cria especificação nem aprovação de produto e não avança o workflow. A execução real continua desabilitada e não houve deploy. `allowed_scope.paths` é verificado como dado declarativo, mas não fornece isolamento do sistema de arquivos. Validação estrutural não substitui testes funcionais ou QA. Execução concorrente e agentes reais permanecem fora do escopo.
 - **Decisão relacionada:** `DEC-008`.
 
+## Memorando de manutenção — Guias de início do repositório e da aplicação
+
+- **Tipo:** Fundação e documentação de uso; não é uma feature da aplicação.
+- **Objetivo:** Explicar como iniciar o fluxo de trabalho no Codex e reservar um local claro para as futuras instruções de execução da aplicação.
+- **O que foi criado:** Um README na raiz para orientar o início do levantamento, mostrar os comandos básicos do orquestrador e apontar para a documentação do processo; um README em `src/` para registrar o estado e as futuras instruções da aplicação.
+- **Como foi feito:** Os comandos de execução da aplicação foram deixados pendentes porque a tecnologia e os scripts ainda serão definidos no Planejamento. As regras do projeto agora indicam onde manter cada guia e proíbem documentar comandos não verificados.
+- **Arquivos e locais afetados:** `README.md`, `src/README.md`, `AGENTS.md`, este documento, `docs/project-roadmap.md` e `docs/decision-log.md`.
+- **Validações executadas:** Revisão de consistência dos links e comandos documentados. Nenhum comando de aplicação ou teste foi executado; a aplicação ainda não existe.
+- **Decisão relacionada:** `DEC-009`.
+
 ## Modelo — Memorando por feature
 
 Copie este bloco para cada nova feature. Use um identificador estável e mantenha o histórico anterior; não substitua memorandos de outras features.
